@@ -12,6 +12,11 @@
     </properties>
     <repositories>
         <repository>
+            <id>192.168.15.73</id>
+            <name>local maven repository</name>
+            <url>http://192.168.15.73:8080/archiva/repository/internal</url>
+        </repository>
+        <repository>
             <id>cloudera</id>
             <name>cloudera maven repository</name>
             <url>https://repository.cloudera.com/content/repositories/releases</url>
@@ -52,7 +57,7 @@
             <dependency>
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase</artifactId>
-                <version>0.94.6-cdh4.2.1</version>
+                <version>0.94.2-cdh4.2.1</version>
                 <type>jar</type>
             </dependency>
             <dependency>
