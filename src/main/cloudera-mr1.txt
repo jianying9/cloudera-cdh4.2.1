@@ -1,0 +1,366 @@
+hadoop dfsadmin -safemode leave
+-----------
+sudo update-rc.d -f hadoop-hdfs-namenode remove
+sudo update-rc.d -f hadoop-hdfs-datanode remove
+sudo update-rc.d -f hadoop-hdfs-secondarynamenode remove
+sudo update-rc.d -f hadoop-0.20-mapreduce-jobtracker remove
+sudo update-rc.d -f hadoop-0.20-mapreduce-tasktracker remove
+sudo update-rc.d -f zookeeper-server remove
+sudo update-rc.d -f hbase-master remove
+sudo update-rc.d -f hbase-regionserver remove
+sudo update-rc.d -f krb5-kdc remove
+sudo update-rc.d -f krb5-admin-server remove
+----------------
+/etc/apt/sources.list.d/gplextras.list
+deb [arch=amd64] http://archive.cloudera.com/gplextras/ubuntu/precise/amd64/gplextras precise-gplextras4 contrib
+deb-src http://archive.cloudera.com/gplextras/ubuntu/precise/amd64/gplextras precise-gplextras4 contrib
+-------
+/etc/apt/sources.list.d/subversion.list
+deb http://ppa.launchpad.net/svn/ppa/ubuntu precise main
+deb-src http://ppa.launchpad.net/svn/ppa/ubuntu precise main
+
+sudo apt-key adv --recv-keys --keyserver subkeys.pgp.net
+--------
+/etc/apt/sources.list.d/cloudera.list
+deb [arch=amd64] http://archive.cloudera.com/cdh4/ubuntu/precise/amd64/cdh precise-cdh4.2.1 contrib
+deb-src http://archive.cloudera.com/cdh4/ubuntu/precise/amd64/cdh precise-cdh4.2.1 contrib
+--------------
+sudo apt-get install curl
+curl -s http://archive.cloudera.com/cdh4/ubuntu/precise/amd64/cdh/archive.key | sudo apt-key add -
+sudo apt-get update
+--------------
+sudo gedit /etc/hosts
+127.0.0.1 aladdin.com
+-------------
+/etc/security/limits.conf:
+*		 -	 nofile		 100000
+------------
+/etc/pam.d/common-session:
+session required        pam_limits.so
+------------
+sudo apt-get install hadoop-0.20-conf-pseudo
+----------
+core-site.xml
+  <property>
+    <name>fs.defaultFS</name>
+    <value>hdfs://aladdin.com:8020</value>
+  </property>
+  <property>
+    <name>hadoop.tmp.dir</name>
+    <value>/tmp</value>
+  </property>
+  <property>
+    <name>ipc.client.connect.max.retries</name>
+    <value>3</value>
+  </property>
+  <!-- security -->
+  <property>
+    <name>hadoop.security.authentication</name>
+    <value>kerberos</value> <!-- A value of "simple" will disable security -->
+  </property>
+  <property>
+     <name>hadoop.security.authorization</name>
+      <value>true</value>
+  </property>
+----------------
+hdfs-site.xml
+  <property>
+    <name>dfs.replication</name>
+    <value>1</value>
+  </property>
+  <property>
+    <name>dfs.permissions.superusergroup</name>
+    <value>hadoop</value>
+  </property>
+  <property>
+    <name>dfs.namenode.safemode.min.datanodes</name>
+    <value>1</value>
+  </property>
+  <property>
+    <name>dfs.namenode.name.dir </name>
+    <value>/home/aladdin/data/hdfs/dfs/name</value>
+  </property>
+  <property>
+    <name>dfs.datanode.name.dir </name>
+    <value>/home/aladdin/data/hdfs/dfs/data</value>
+  </property>
+  <property>
+     <name>dfs.namenode.checkpoint.dir</name>
+     <value>/home/aladdin/data/hdfs/dfs/namesecondary</value>
+  </property>
+  <!-- security -->
+  <property>
+    <name>dfs.block.access.token.enable</name>
+    <value>true</value>
+  </property>
+
+  <property>
+    <name>dfs.namenode.keytab.file</name>
+    <value>/etc/krb5kdc/kadm5.keytab</value> <!-- path to the HDFS keytab -->
+  </property>
+  <property>
+    <name>dfs.namenode.kerberos.principal</name>
+    <value>hdfs/aladdin.com@ALADDIN.COM</value>
+  </property>
+  <property>
+    <name>dfs.namenode.kerberos.internal.spnego.principal</name>
+    <value>HTTP/aladdin.com@ALADDIN.COM</value>
+  </property>
+
+  <property>
+    <name>dfs.secondary.namenode.keytab.file</name>
+    <value>/etc/krb5kdc/kadm5.keytab</value> <!-- path to the HDFS keytab -->
+  </property>
+  <property>
+    <name>dfs.secondary.namenode.kerberos.principal</name>
+    <value>hdfs/aladdin.com@ALADDIN.COM</value>
+  </property>
+  <property>
+    <name>dfs.secondary.namenode.kerberos.internal.spnego.principal</name>
+    <value>HTTP/aladdin.com@ALADDIN.COM</value>
+  </property>
+
+  <property>
+    <name>dfs.datanode.data.dir.perm</name>
+    <value>700</value>
+  </property>
+  <property>
+    <name>dfs.datanode.address</name>
+    <value>0.0.0.0:1004</value>
+  </property>
+  <property>
+    <name>dfs.datanode.http.address</name>
+    <value>0.0.0.0:1006</value>
+  </property>
+
+  <property>
+    <name>dfs.datanode.keytab.file</name>
+    <value>/etc/krb5kdc/kadm5.keytab</value> <!-- path to the HDFS keytab -->
+  </property>
+  <property>
+    <name>dfs.datanode.kerberos.principal</name>
+    <value>hdfs/aladdin.com@ALADDIN.COM</value>
+  </property>
+
+  <property>
+    <name>dfs.journalnode.keytab.file</name>
+    <value>/etc/krb5kdc/kadm5.keytab</value> <!-- path to the HDFS keytab -->
+  </property>
+  <property>
+    <name>dfs.journalnode.kerberos.principal</name>
+    <value>hdfs/aladdin.com@ALADDIN.COM</value>
+  </property>
+  <property>
+    <name>dfs.journalnode.kerberos.internal.spnego.principal</name>
+    <value>HTTP/aladdin.com@ALADDIN.COM</value>
+  </property>
+
+------------
+mapred-site.xml
+  <property>
+    <name>mapred.job.tracker</name>
+    <value>aladdin.com:8021</value>
+  </property>
+  <property>
+    <name>mapred.job.tracker.http.address</name>
+    <value>aladdin.com:50030</value>
+  </property>
+  <!-- security -->
+  <property>
+    <name>mapreduce.jobtracker.kerberos.principal</name>
+    <value>mapred/aladdin.com@ALADDIN.COM</value>
+  </property>
+  <property>
+    <name>mapreduce.jobtracker.keytab.file</name>
+    <value>/etc/krb5kdc/kadm5.keytab</value> <!-- path to the MapReduce keytab -->
+  </property>
+  <property>
+    <name>mapreduce.tasktracker.kerberos.principal</name>
+    <value>mapred/aladdin.com@ALADDIN.COM</value>
+  </property>
+  <property>
+    <name>mapreduce.tasktracker.keytab.file</name>
+    <value>/etc/krb5kdc/kadm5.keytab</value> <!-- path to the MapReduce keytab -->
+  </property>
+--------
+/etc/zookeeper/conf/zoo.cfg:
+
+server.0=aladdin.com:22888:23888
+authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
+jaasLoginRenew=3600000
+
+kerberos.removeHostFromPrincipal=true
+kerberos.removeRealmFromPrincipal=true
+
+/etc/zookeeper/conf/jaas.conf:
+
+Server {
+  com.sun.security.auth.module.Krb5LoginModule required
+  useKeyTab=true
+  keyTab="/etc/krb5kdc/kadm5.keytab"
+  storeKey=true
+  useTicketCache=false
+  principal="zookeeper/aladdin.com@ALADDIN.COM";
+};
+
+/etc/zookeeper/conf/java.env:
+
+export JVMFLAGS="-Djava.security.auth.login.config=/etc/zookeeper/conf/jaas.conf"
+export JVMFLAGS="-Djava.security.auth.login.config=/etc/zookeeper/conf/jaas.conf -Dsun.security.krb5.debug=true -Djavax.net.debug=ssl"
+---------
+hbase-site.xml
+  <property>
+    <name>hbase.rootdir</name>
+    <value>hdfs://aladdin.com:8020/hbase</value>
+  </property>
+  <property>
+    <name>hbase.zookeeper.quorum</name>
+    <value>aladdin.com</value>
+  </property>
+  <property>
+    <name>hbase.cluster.distributed</name>
+    <value>true</value>
+  </property>
+  <!-- security -->
+  <property>
+    <name>hbase.security.authentication</name>
+    <value>kerberos</value>
+  </property>
+  <property>
+    <name>hbase.rpc.engine</name>
+    <value>org.apache.hadoop.hbase.ipc.SecureRpcEngine</value>
+  </property>
+  <property>
+    <name>hbase.regionserver.kerberos.principal</name>
+    <value>hbase/aladdin.com@ALADDIN.COM</value>
+  </property>
+  <property>
+    <name>hbase.regionserver.keytab.file</name>
+    <value>/etc/krb5kdc/kadm5.keytab</value>
+  </property>
+  <property>
+    <name>hbase.master.kerberos.principal</name>
+    <value>hbase/aladdin.com@ALADDIN.COM</value>
+  </property>
+  <property>
+    <name>hbase.master.keytab.file</name>
+    <value>/etc/krb5kdc/kadm5.keytab</value>
+  </property>
+  <property>
+    <name>hbase.security.authorization</name>
+    <value>true</value>
+  </property>
+  <property>
+    <name>hbase.coprocessor.master.classes</name>
+    <value>org.apache.hadoop.hbase.security.access.AccessController</value>
+  </property>
+  <property>
+    <name>hbase.coprocessor.region.classes</name>
+    <value>org.apache.hadoop.hbase.security.token.TokenProvider,org.apache.hadoop.hbase.security.access.AccessController</value>
+  </property>
+
+zk-jaas.conf:
+Client {
+  com.sun.security.auth.module.Krb5LoginModule required
+  useKeyTab=true 
+  storeKey=true
+  useTicketCache=false
+  keyTab="/etc/krb5kdc/kadm5.keytab"
+  principal="hbase/aladdin.com@ALADDIN.COM";
+};
+
+hbase-env.sh:
+export HBASE_OPTS="$HBASE_OPTS -Djava.security.auth.login.config=/etc/hbase/conf/zk-jaas.conf"
+
+
+-------
+sudo -u hdfs kinit -k -t /etc/krb5kdc/kadm5.keytab hdfs/aladdin.com@ALADDIN.COM
+sudo -u hdfs hdfs namenode -format
+sudo service hadoop-hdfs-namenode start
+sudo service hadoop-hdfs-datanode start
+sudo -u hdfs hadoop fs -chmod 777 /
+sudo -u hdfs hadoop fs -mkdir /tmp
+sudo -u hdfs hadoop fs -chmod 777 /tmp
+sudo -u mapred kinit -k -t /etc/krb5kdc/kadm5.keytab mapred/aladdin.com@ALADDIN.COM
+sudo -u mapred hadoop fs -mkdir -p /tmp/mapred/staging
+sudo -u mapred hadoop fs -mkdir -p /tmp/mapred/system
+sudo -u mapred hadoop fs -chmod -R 775 /tmp/mapred
+sudo -u hdfs hadoop fs -mkdir /user
+sudo -u hdfs hadoop fs -chmod 775 /user
+kinit -k -t /etc/krb5kdc/kadm5.keytab aladdin/aladdin.com@ALADDIN.COM
+hadoop fs -mkdir /user/aladdin
+hadoop fs -mkdir /user/aladdin/input
+hadoop fs -put /etc/hadoop/conf/*.xml /user/aladdin/input
+sudo service hadoop-0.20-mapreduce-jobtracker start
+sudo service hadoop-0.20-mapreduce-tasktracker start
+---------------
+特殊处理
+
+sudo -u hdfs hadoop dfsadmin -safemode leave
+------------
+sudo apt-get install krb5-kdc krb5-admin-server
+/etc/krb5.conf:
+default_realm = aladdin.com
+aladdin.com = {
+                kdc = aladdin.com
+                admin_server = aladdin.com
+        }
+
+------------
+sudo krb5_newrealm
+sudo gedit /etc/krb5kdc/kadm5.acl
+
+sudo service krb5-admin-server restart
+sudo service krb5-kdc restart
+---------
+sudo kadmin.local
+addprinc -randkey hdfs/aladdin.com
+addprinc -randkey mapred/aladdin.com
+addprinc -randkey yarn/aladdin.com
+addprinc -randkey HTTP/aladdin.com
+ktadd -k /etc/krb5kdc/kadm5.keytab hdfs/aladdin.com
+ktadd -k /etc/krb5kdc/kadm5.keytab mapred/aladdin.com
+ktadd -k /etc/krb5kdc/kadm5.keytab yarn/aladdin.com
+ktadd -k /etc/krb5kdc/kadm5.keytab HTTP/aladdin.com
+----------------------
+kinit -k -t /etc/krb5kdc/kadm5.keytab hdfs/aladdin.com@ALADDIN.COM
+----------
+sudo service hadoop-0.20-mapreduce-tasktracker stop
+sudo service hadoop-0.20-mapreduce-jobtracker stop
+sudo service hadoop-hdfs-secondarynamenode stop
+sudo service hadoop-hdfs-datanode stop
+sudo service hadoop-hdfs-namenode stop
+---------
+/etc/default/hadoop-hdfs-datanode
+export JSVC_HOME=/usr/lib/bigtop-utils
+--------
+sudo service zookeeper-server init --myid=aladdin.com
+/etc/zookeeper/conf/zoo.cfg:
+authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
+jaasLoginRenew=3600000
+
+
+addprinc -randkey zookeeper/aladdin.com
+ktadd -k /etc/krb5kdc/kadm5.keytab zookeeper/aladdin.com
+addprinc -randkey zkcli/aladdin.com
+ktadd -k /etc/krb5kdc/kadm5.keytab zkcli/aladdin.com
+
+
+--------------------
+addprinc -randkey hbase/aladdin.com
+ktadd -k /etc/krb5kdc/kadm5.keytab hbase/aladdin.com
+sudo -u hbase kinit -k -t /etc/krb5kdc/kadm5.keytab hbase/aladdin.com@ALADDIN.COM
+
+addprinc -randkey aladdin/aladdin.com
+ktadd -k /etc/krb5kdc/kadm5.keytab aladdin/aladdin.com
+kinit -k -t /etc/krb5kdc/kadm5.keytab aladdin/aladdin.com@ALADDIN.COM
+-------
+
+create 'Installed_App_List', {NAME => 'INFO', VERSIONS => 1, BLOOMFILTER => 'ROWCOL', COMPRESSION => 'snappy', BLOCKCACHE => 'true' },{NAME => 'HISTORY', VERSIONS => 30, COMPRESSION => 'snappy'}
+
+create 'Installed_App_Cache', {NAME => 'LIST', VERSIONS => 1, IN_MEMORY => 'true', BLOOMFILTER => 'ROW'}
+---------
+/etc/default/hadoop-hdfs-datanode
+
+
+

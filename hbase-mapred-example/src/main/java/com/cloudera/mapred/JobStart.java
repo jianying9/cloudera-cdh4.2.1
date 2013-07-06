@@ -1,5 +1,7 @@
 package com.cloudera.mapred;
 
+import java.util.Iterator;
+import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -14,7 +16,19 @@ public class JobStart extends Configured implements Tool {
 
     public static void main(String[] args) throws Exception {
         Configuration config = HBaseConfiguration.create();
-        config.setStrings("hbase.zookeeper.quorum", "aladdin.com");
+        Iterator<Map.Entry<String, String>> iterator = config.iterator();
+        Map.Entry<String, String> entiry;
+        while(iterator.hasNext()) {
+            entiry = iterator.next();
+            System.out.println(entiry.getKey() + "=>" + entiry.getValue());
+        }
+        config.set("hbase.zookeeper.quorum", "aladdin.com");
+        config.set("hbase.security.authentication", "kerberos");
+        config.set("hbase.rpc.engine", "org.apache.hadoop.hbase.ipc.SecureRpcEngine");
+        config.set("hbase.regionserver.kerberos.principal", "hbase/aladdin.com@ALADDIN.COM");
+//        config.set("hbase.regionserver.keytab.file", "/etc/krb5kdc/kadm5.keytab");
+        config.set("hbase.master.kerberos.principal", "hbase/aladdin.com@ALADDIN.COM");
+//        config.set("hbase.master.keytab.file", "/etc/krb5kdc/kadm5.keytab");
         int res = ToolRunner.run(config, new JobStart(), args);
         System.exit(res);
     }
