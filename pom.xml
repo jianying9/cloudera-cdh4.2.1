@@ -451,5 +451,6 @@
     <modules>
         <module>word-count</module>
         <module>hbase-mapred-example</module>
+        <module>91-user-soft</module>
     </modules>
 </project>
