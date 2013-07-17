@@ -40,13 +40,7 @@
                 <artifactId>mrunit</artifactId>
                 <version>1.0.0</version>
                 <type>jar</type>
-                <classifier>hadoop1</classifier>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>mockito-all</artifactId>
-                        <groupId>org.mockito</groupId>
-                    </exclusion>
-                </exclusions>
+                <classifier>hadoop2</classifier>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -135,6 +129,18 @@
                 <type>jar</type>
                 <exclusions>
                     <exclusion>
+                        <artifactId>paranamer</artifactId>
+                        <groupId>com.thoughtworks.paranamer</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>snappy-java</artifactId>
+                        <groupId>org.xerial.snappy</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jsr305</artifactId>
+                        <groupId>com.google.code.findbugs</groupId>
+                    </exclusion>
+                    <exclusion>
                         <artifactId>jetty</artifactId>
                         <groupId>org.mortbay.jetty</groupId>
                     </exclusion>
@@ -211,18 +217,6 @@
                         <groupId>com.sun.jersey</groupId>
                     </exclusion>
                     <exclusion>
-                        <artifactId>avro</artifactId>
-                        <groupId>org.apache.avro</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>commons-lang</artifactId>
-                        <groupId>commons-lang</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>guava</artifactId>
-                        <groupId>com.google.guava</groupId>
-                    </exclusion>
-                    <exclusion>
                         <artifactId>commons-logging</artifactId>
                         <groupId>commons-logging</groupId>
                     </exclusion>
@@ -266,6 +260,10 @@
                 <version>0.94.2-cdh4.2.1</version>
                 <type>jar</type>
                 <exclusions>
+                    <exclusion>
+                        <artifactId>jsr305</artifactId>
+                        <groupId>com.google.code.findbugs</groupId>
+                    </exclusion>
                     <exclusion>
                         <artifactId>jackson-mapper-asl</artifactId>
                         <groupId>org.codehaus.jackson</groupId>
@@ -347,16 +345,8 @@
                         <groupId>org.apache.thrift</groupId>
                     </exclusion>
                     <exclusion>
-                        <artifactId>commons-lang</artifactId>
-                        <groupId>commons-lang</groupId>
-                    </exclusion>
-                    <exclusion>
                         <artifactId>high-scale-lib</artifactId>
                         <groupId>com.github.stephenc.high-scale-lib</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>guava</artifactId>
-                        <groupId>com.google.guava</groupId>
                     </exclusion>
                     <exclusion>
                         <artifactId>jackson-xc</artifactId>
@@ -399,12 +389,6 @@
                         <groupId>org.slf4j</groupId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>commons-dbcp</groupId>
-                <artifactId>commons-dbcp</artifactId>
-                <version>1.4</version>
-                <type>jar</type>
             </dependency>
         </dependencies>
     </dependencyManagement>

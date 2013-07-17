@@ -25,7 +25,7 @@
             <groupId>org.apache.mrunit</groupId>
             <artifactId>mrunit</artifactId>
             <type>jar</type>
-            <classifier>hadoop1</classifier>
+            <classifier>hadoop2</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>

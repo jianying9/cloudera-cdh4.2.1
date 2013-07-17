@@ -14,14 +14,14 @@ public class PartitionUtils {
      */
     public static String getPartitionHex(String imei) {
         String result;//return
-        final int length = 65536;
+        final int length = 65535;
         int h = 0;
         int hash = imei.hashCode();
         h ^= hash;
         h ^= (h >>> 20) ^ (h >>> 12);
         h = h ^ (h >>> 7) ^ (h >>> 4);
         int part = h & length;
-        result = Integer.toHexString(part);
+        result = String.format("%04x", part);
         return result;
     }
 }
