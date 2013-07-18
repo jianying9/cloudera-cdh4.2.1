@@ -26,9 +26,9 @@ import org.junit.Test;
  * create 'UserSoftTest',{NAME => 'INFO', VERSIONS => 1, BLOOMFILTER => 'ROWCOL', COMPRESSION => 'snappy', BLOCKCACHE => 'true' }, {NUMREGIONS => 512, SPLITALGO => 'HexStringSplit'}
  * @author aladdin
  */
-public class UserSoftMapredTest {
+public class UserSoftDayMapredTest {
 
-    public UserSoftMapredTest() {
+    public UserSoftDayMapredTest() {
     }
 
     @BeforeClass
@@ -56,45 +56,45 @@ public class UserSoftMapredTest {
             testDriver.getConfiguration().set(entry.getKey(), entry.getValue());
         }
         //
-        testDriver.getConfiguration().set(UserSoftMapred.TABLE_NAME_PARA, "UserSoftTest");
+        testDriver.getConfiguration().set(UserSoftDayMapred.TABLE_NAME_PARA, "UserSoftTest");
     }
     
     private String[] mapInputLineArr = {
-        "12374	012368002052600	1	12	3184	false	1207052155	2	1926265856	null	0",
-        "12375	012368002052600	1	368	4710	false	1207172114	2	1926265856	null	0",
-        "12375	012368002052600	1	368	4710	false	1207172115	2	1926265856	null	0",
-        "15989	012961000307800	1	11495	318	false	1207052209	2	107345920	null	0",
-        "15991	012961000307800	1	13776	4639	false	1207052209	2	107345920	null	0",
-        "15991	012961000307800	1	13776	4639	false	1207052210	2	107345920	null	0",
-        "16959	013024001131700	1	1729	3076	false	1207121238	2	801954304	null	0",
-        "16960	013024001131700	1	11950	3097	false	1207121238	2	801954304	null	0",
-        "16960	013024001131700	1	11950	3097	false	1207121239	2	801954304	null	0"
+        "12374	012368002052600	1	12	3184	1207052155	1926265856	0",
+        "12375	012368002052600	1	368	4710	1207172114	1926265856	0",
+        "12375	012368002052600	1	368	4710	1207172115	1926265856	0",
+        "15989	012961000307800	1	11495	318	1207052209	107345920	0",
+        "15991	012961000307800	1	13776	4639	1207052209	107345920	0",
+        "15991	012961000307800	1	13776	4639	1207052210	107345920	0",
+        "16959	013024001131700	1	1729	3076	1207121238	801954304	0",
+        "16960	013024001131700	1	11950	3097	1207121238	801954304	0",
+        "16960	013024001131700	1	11950	3097	1207121239	801954304	0"
     };
     
     private String[] mapOutputLineArr = {
-        "e54d_012368002052600	12_1207052155_1_3184_2_0",
-        "e54d_012368002052600	368_1207172114_1_4710_2_0",
-        "e54d_012368002052600	368_1207172115_1_4710_2_0",
-        "b79d_012961000307800	11495_1207052209_1_318_2_0",
-        "b79d_012961000307800	13776_1207052209_1_4639_2_0",
-        "b79d_012961000307800	13776_1207052210_1_4639_2_0",
-        "bf20_013024001131700	1729_1207121238_1_3076_2_0",
-        "bf20_013024001131700	11950_1207121238_1_3097_2_0",
-        "bf20_013024001131700	11950_1207121239_1_3097_2_0"
+        "e54d_012368002052600	12_1207052155_1_3184",
+        "e54d_012368002052600	368_1207172114_1_4710",
+        "e54d_012368002052600	368_1207172115_1_4710",
+        "b79d_012961000307800	11495_1207052209_1_318",
+        "b79d_012961000307800	13776_1207052209_1_4639",
+        "b79d_012961000307800	13776_1207052210_1_4639",
+        "bf20_013024001131700	1729_1207121238_1_3076",
+        "bf20_013024001131700	11950_1207121238_1_3097",
+        "bf20_013024001131700	11950_1207121239_1_3097"
     };
     
     private String[] combinerOutputLineArr = {
-        "e54d_012368002052600	368_1207172115_1_4710_2_0",
-        "e54d_012368002052600	12_1207052155_1_3184_2_0",
-        "b79d_012961000307800	13776_1207052210_1_4639_2_0",
-        "b79d_012961000307800	11495_1207052209_1_318_2_0",
-        "bf20_013024001131700	1729_1207121238_1_3076_2_0",
-        "bf20_013024001131700	11950_1207121239_1_3097_2_0"
+        "e54d_012368002052600	368_1207172115_1_4710",
+        "e54d_012368002052600	12_1207052155_1_3184",
+        "b79d_012961000307800	13776_1207052210_1_4639",
+        "b79d_012961000307800	11495_1207052209_1_318",
+        "bf20_013024001131700	1729_1207121238_1_3076",
+        "bf20_013024001131700	11950_1207121239_1_3097"
     };
     
-    private Mapper mapper = new UserSoftMapred.MyMapper();
-    private Reducer combiner = new UserSoftMapred.MyCombiner();
-    private Reducer reducer = new UserSoftMapred.MyReducer();
+    private Mapper mapper = new UserSoftDayMapred.MyMapper();
+    private Reducer combiner = new UserSoftDayMapred.MyCombiner();
+    private Reducer reducer = new UserSoftDayMapred.MyReducer();
 
     private Map<String, String> parseInputToOut(String line) {
         Map<String, String> resultMap = new HashMap<String, String>(2, 1);
@@ -112,14 +112,10 @@ public class UserSoftMapredTest {
         String softId = record[3];
         String softVersion = record[4];
         String gatherTime = record[6];
-        String sourceId = record[7];
-        String isUninstalled = record[10];
         columnBuilder.append(softId).append('_')
                 .append(gatherTime).append('_')
                 .append(platForm).append('_')
-                .append(softVersion).append('_')
-                .append(sourceId).append('_')
-                .append(isUninstalled);
+                .append(softVersion);
         resultMap.put("value", columnBuilder.toString());
         return resultMap;
     }
@@ -151,6 +147,7 @@ public class UserSoftMapredTest {
     @Test
     public void combinerTest() throws IOException {
         ReduceDriver reduceDriver = new ReduceDriver(this.combiner);
+        reduceDriver.getConfiguration();
         String lastKey = "";
         String key;
         String value;

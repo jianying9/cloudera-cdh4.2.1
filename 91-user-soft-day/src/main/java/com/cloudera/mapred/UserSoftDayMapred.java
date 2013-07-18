@@ -21,7 +21,7 @@ import org.apache.hadoop.mapreduce.Reducer;
  *
  * @author aladdin
  */
-public class UserSoftMapred {
+public class UserSoftDayMapred {
     
     public static final String TABLE_NAME_PARA = "-Dmapred.tableName";
 
@@ -39,8 +39,6 @@ public class UserSoftMapred {
         private String softId;
         private String softVersion;
         private String gatherTime;
-        private String sourceId;
-        private String isUninstalled;
         private String part;
         private final StringBuilder keyBuilder = new StringBuilder(40);
         private final StringBuilder columnBuilder = new StringBuilder(20);
@@ -61,15 +59,13 @@ public class UserSoftMapred {
             this.strValue = value.toString();
             this.record = this.strValue.split("\t");
             //判断数据是否完整
-            if (this.record.length == 11) {
+            if (this.record.length == 8) {
                 //数据完整,取值
                 this.imei = this.record[1];
                 this.platForm = this.record[2];
                 this.softId = this.record[3];
                 this.softVersion = this.record[4];
-                this.gatherTime = this.record[6];
-                this.sourceId = this.record[7];
-                this.isUninstalled = this.record[10];
+                this.gatherTime = this.record[5];
                 this.part = PartitionUtils.getPartitionHex(imei);
                 //构造输出key:part_imei
                 this.keyBuilder.append(this.part).append('_').append(this.imei);
@@ -79,9 +75,7 @@ public class UserSoftMapred {
                 this.columnBuilder.append(this.softId).append('_')
                         .append(this.gatherTime).append('_')
                         .append(this.platForm).append('_')
-                        .append(this.softVersion).append('_')
-                        .append(this.sourceId).append('_')
-                        .append(this.isUninstalled);
+                        .append(this.softVersion);
                 this.newValue.set(this.columnBuilder.toString());
                 this.columnBuilder.setLength(0);
                 context.write(newKey, newValue);
@@ -226,8 +220,8 @@ public class UserSoftMapred {
             String gatherTime = record[1];
             String platForm = record[2];
             String softVersion = record[3];
-            String sourceId = record[4];
-            String isUninstalled = record[5];
+            String sourceId = "1";
+            String isUninstalled = "0";
             String rowKey = this.rowKeyPrefix.concat(softId);
             Put put = new Put(Bytes.toBytes(rowKey));
             put.add(this.columnFamily, this.gatherTimeByte, Bytes.toBytes(gatherTime));
@@ -244,12 +238,10 @@ public class UserSoftMapred {
             String softId = record[0];
             String gatherTime = record[1];
             String softVersion = record[3];
-            String isUninstalled = record[5];
             String rowKey = this.rowKeyPrefix.concat(softId);
             Put put = new Put(Bytes.toBytes(rowKey));
             put.add(this.columnFamily, this.gatherTimeByte, Bytes.toBytes(gatherTime));
             put.add(this.columnFamily, this.softVersionByte, Bytes.toBytes(softVersion));
-            put.add(this.columnFamily, this.isUninstalledByte, Bytes.toBytes(isUninstalled));
             return put;
         }
 
@@ -301,7 +293,7 @@ public class UserSoftMapred {
 
         @Override
         protected void setup(Context context) throws IOException, InterruptedException {
-            this.tableName = context.getConfiguration().get(UserSoftMapred.TABLE_NAME_PARA);
+            this.tableName = context.getConfiguration().get(UserSoftDayMapred.TABLE_NAME_PARA);
             this.hTablePool = new HTablePool(context.getConfiguration(), 1);
         }
 

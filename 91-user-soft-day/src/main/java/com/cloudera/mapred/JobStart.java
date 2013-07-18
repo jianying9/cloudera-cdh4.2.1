@@ -28,18 +28,18 @@ public class JobStart extends Configured implements Tool{
     public int run(String[] args) throws Exception {
         Configuration conf = this.getConf();
         int result;
-        Job job = new Job(conf, "91-user-soft");
-        job.setJarByClass(UserSoftMapred.class);
-        job.setMapperClass(UserSoftMapred.MyMapper.class);
-        job.setCombinerClass(UserSoftMapred.MyCombiner.class);
-        job.setPartitionerClass(UserSoftMapred.MyPartitioner.class);
-        job.setReducerClass(UserSoftMapred.MyReducer.class);
+        Job job = new Job(conf, "91-user-soft-day");
+        job.setJarByClass(UserSoftDayMapred.class);
+        job.setMapperClass(UserSoftDayMapred.MyMapper.class);
+        job.setCombinerClass(UserSoftDayMapred.MyCombiner.class);
+        job.setPartitionerClass(UserSoftDayMapred.MyPartitioner.class);
+        job.setReducerClass(UserSoftDayMapred.MyReducer.class);
         job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(Text.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));
         job.setOutputFormatClass(NullOutputFormat.class);
         job.setNumReduceTasks(Integer.parseInt(args[1]));
-        job.getConfiguration().set(UserSoftMapred.TABLE_NAME_PARA, args[2]);
+        job.getConfiguration().set(UserSoftDayMapred.TABLE_NAME_PARA, args[2]);
         TableMapReduceUtil.initCredentials(job);
         result = job.waitForCompletion(true) ? 0 : 1;
         return result;
