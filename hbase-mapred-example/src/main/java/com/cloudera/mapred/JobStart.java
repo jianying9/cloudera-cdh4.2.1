@@ -17,13 +17,6 @@ public class JobStart extends Configured implements Tool {
     public static void main(String[] args) throws Exception {
         System.out.println("start............");
         Configuration config = HBaseConfiguration.create();
-//        config.set("hbase.zookeeper.quorum", "aladdin.com");
-//        config.set("hbase.security.authentication", "kerberos");
-//        config.set("hbase.rpc.engine", "org.apache.hadoop.hbase.ipc.SecureRpcEngine");
-//        config.set("hbase.regionserver.kerberos.principal", "hbase/aladdin.com@ALADDIN.COM");
-//        config.set("hbase.regionserver.keytab.file", "/etc/krb5kdc/kadm5.keytab");
-//        config.set("hbase.master.kerberos.principal", "hbase/aladdin.com@ALADDIN.COM");
-//        config.set("hbase.master.keytab.file", "/etc/krb5kdc/kadm5.keytab");
         int res = ToolRunner.run(config, new JobStart(), args);
         System.exit(res);
     }

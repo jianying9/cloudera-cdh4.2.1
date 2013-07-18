@@ -57,14 +57,6 @@
                         <groupId>org.mortbay.jetty</groupId>
                     </exclusion>
                     <exclusion>
-                        <artifactId>jackson-mapper-asl</artifactId>
-                        <groupId>org.codehaus.jackson</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jackson-core-asl</artifactId>
-                        <groupId>org.codehaus.jackson</groupId>
-                    </exclusion>
-                    <exclusion>
                         <artifactId>jsp-api</artifactId>
                         <groupId>javax.servlet.jsp</groupId>
                     </exclusion>
@@ -147,14 +139,6 @@
                     <exclusion>
                         <artifactId>jetty-util</artifactId>
                         <groupId>org.mortbay.jetty</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jackson-mapper-asl</artifactId>
-                        <groupId>org.codehaus.jackson</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jackson-core-asl</artifactId>
-                        <groupId>org.codehaus.jackson</groupId>
                     </exclusion>
                     <exclusion>
                         <artifactId>jsp-api</artifactId>
@@ -263,14 +247,6 @@
                     <exclusion>
                         <artifactId>jsr305</artifactId>
                         <groupId>com.google.code.findbugs</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jackson-mapper-asl</artifactId>
-                        <groupId>org.codehaus.jackson</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jackson-core-asl</artifactId>
-                        <groupId>org.codehaus.jackson</groupId>
                     </exclusion>
                     <exclusion>
                         <artifactId>commons-cli</artifactId>

@@ -167,7 +167,7 @@ public class UserSoftMapred {
         //hbase table处理
         private final HTablePool hTablePool;
         private final String tableName;
-        private final byte[] columnFamily = Bytes.toBytes("info");
+        private final byte[] columnFamily = Bytes.toBytes("INFO");
         //softId_gatherTime_platForm_softVersion_sourceId_isUninstalled
         private final byte[] platFormByte = Bytes.toBytes("platForm");
         private final byte[] softVersionByte = Bytes.toBytes("softVersion");
@@ -182,7 +182,7 @@ public class UserSoftMapred {
         public MyReducer() {
             Configuration config = HBaseConfiguration.create();
             this.hTablePool = new HTablePool(config, 1);
-            this.tableName = "Test";
+            this.tableName = "UserSoftTest";
         }
 
         /**
@@ -212,7 +212,7 @@ public class UserSoftMapred {
                 while (result != null) {
                     rowKey = result.getRow();
                     softId = Bytes.toString(rowKey);
-                    softId = softId.substring(softId.lastIndexOf("_"));
+                    softId = softId.substring(softId.lastIndexOf("_") + 1);
                     this.softIdList.add(softId);
                     result = rs.next();
                 }
