@@ -27,7 +27,7 @@ public class UserSoftAnalyzeMapred {
         private String part;
         private String region;
         private String regionNext;
-        private final List<String> regionList = new ArrayList<String>(500);
+        private final List<String> regionList = new ArrayList<String>(512);
 
         @Override
         protected void setup(Context context) throws IOException, InterruptedException {
