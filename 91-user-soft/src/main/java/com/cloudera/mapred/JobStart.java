@@ -31,7 +31,6 @@ public class JobStart extends Configured implements Tool{
         Job job = new Job(conf, "91-user-soft");
         job.setJarByClass(UserSoftMapred.class);
         job.setMapperClass(UserSoftMapred.MyMapper.class);
-        job.setCombinerClass(UserSoftMapred.MyCombiner.class);
         job.setPartitionerClass(UserSoftMapred.MyPartitioner.class);
         job.setReducerClass(UserSoftMapred.MyReducer.class);
         job.setMapOutputKeyClass(Text.class);

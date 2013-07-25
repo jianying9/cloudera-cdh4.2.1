@@ -12,16 +12,16 @@ public class PartitionUtils {
      * @param imei
      * @return
      */
-    public static String getPartitionHex(String imei) {
-        String result;//return
+    public static int getPartition(String imei) {
+        int result;//return
         final int length = 65535;
         int h = 0;
         int hash = imei.hashCode();
         h ^= hash;
         h ^= (h >>> 20) ^ (h >>> 12);
         h = h ^ (h >>> 7) ^ (h >>> 4);
-        int part = h & length;
-        result = String.format("%04x", part);
+        result = h & length;
+//        result = String.format("%04x", part);
         return result;
     }
 }
