@@ -8,6 +8,7 @@ import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -38,6 +39,7 @@ public class JobStart extends Configured implements Tool{
         job.setMapOutputValueClass(Text.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));
         job.setOutputFormatClass(NullOutputFormat.class);
+//        FileOutputFormat.setOutputPath(job, new Path(args[1]));
         job.setNumReduceTasks(Integer.parseInt(args[1]));
         job.getConfiguration().set(UserSoftDayMapred.TABLE_NAME_PARA, args[2]);
         TableMapReduceUtil.initCredentials(job);
