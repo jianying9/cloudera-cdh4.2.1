@@ -4,10 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.hadoop.hbase.client.Get;
+import java.util.Map;
+import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -28,6 +29,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 public class UserSoftDayMapred {
 
     public static final String TABLE_NAME_PARA = "-Dmapred.tableName";
+    public static final String TABLE_REGION_PART = "-Dmapred.tableRegionPart";
 
     /**
      * 读取hdfs文件内容，输出固定key,value集合
@@ -75,23 +77,23 @@ public class UserSoftDayMapred {
                 this.hashCode = this.record[6];
                 this.p = this.record[7];
                 int partNum = PartitionUtils.getPartition(this.imei);
-                if (partNum >= 8704 && partNum < 8832) {
-                    this.part = Integer.toString(PartitionUtils.getPartition(this.imei));
-                    //构造输出key:part_imei
-                    this.keyBuilder.append(this.part).append('_').append(this.imei);
-                    this.newKey.set(this.keyBuilder.toString());
-                    this.keyBuilder.setLength(0);
-                    //构造输出value:softId_gatherTime_platForm_softVersion_hashCode_p
-                    this.columnBuilder.append(this.softId).append('_')
-                            .append(this.gatherTime).append('_')
-                            .append(this.platForm).append('_')
-                            .append(this.softVersion).append('_')
-                            .append(this.hashCode).append('_')
-                            .append(this.p);
-                    this.newValue.set(this.columnBuilder.toString());
-                    this.columnBuilder.setLength(0);
-                    context.write(newKey, newValue);
-                }
+//                if (partNum <= 896) {
+                this.part = String.format("%04x", partNum);
+                //构造输出key:part_imei
+                this.keyBuilder.append(this.part).append('_').append(this.imei);
+                this.newKey.set(this.keyBuilder.toString());
+                this.keyBuilder.setLength(0);
+                //构造输出value:softId_gatherTime_platForm_softVersion_hashCode_p
+                this.columnBuilder.append(this.softId).append('_')
+                        .append(this.gatherTime).append('_')
+                        .append(this.platForm).append('_')
+                        .append(this.softVersion).append('_')
+                        .append(this.hashCode).append('_')
+                        .append(this.p);
+                this.newValue.set(this.columnBuilder.toString());
+                this.columnBuilder.setLength(0);
+                context.write(newKey, newValue);
+//                }
             }
         }
     }
@@ -145,47 +147,67 @@ public class UserSoftDayMapred {
     }
 
     /**
-     * 将map输出的结果根据part进行分类，相同的part的数据分配到同一个reducer中
+     * 
      */
-    public static class MyPartitioner extends Partitioner<Text, Text> {
+    public static class MyPartitioner extends Partitioner<Text, Text> implements Configurable {
 
-        private String part;
+        /*
+         * region startKe集合，00000000～fff0000顺序存储 
+         */
         private final List<String> regionList = new ArrayList<String>(512);
-
-        public MyPartitioner() {
-            long start = 0;
-            long d = 8388608;
-            String region;
-            for (int index = 0; index < 512; index++) {
-                region = String.format("%08x", start);
-                this.regionList.add(region);
-                start += d;
-            }
-        }
+        /*
+         * region 和 partition对应关系
+         */
+        private final Map<String, Integer> regionPartMap = new HashMap<String, Integer>(512, 1);
+        private Configuration conf;
 
         @Override
         public int getPartition(Text key, Text value, int numReduceTasks) {
-            int result = 0;
+            int result;
             String keyStr = key.toString();
-            this.part = keyStr.substring(0, keyStr.indexOf("_"));
-            int partNum = Integer.parseInt(this.part);
-            this.part = String.format("%04x", partNum);
-            String region;
+            String part = keyStr.substring(0, keyStr.indexOf("_"));
+            String region = "00000000";
             String regionNext;
             for (int index = 0; index < this.regionList.size(); index++) {
                 region = this.regionList.get(index);
                 if ((index + 1) >= this.regionList.size()) {
-                    result = index;
+                    //最后一个region
                     break;
                 } else {
+                    //非最后一个region
                     regionNext = this.regionList.get(index + 1);
-                    if (this.part.compareTo(region) >= 0 && this.part.compareTo(regionNext) < 0) {
-                        result = index;
+                    if (part.compareTo(region) >= 0 && part.compareTo(regionNext) < 0) {
+                        //定位当前part所属的region
                         break;
                     }
                 }
             }
-            return result % numReduceTasks;
+            result = this.regionPartMap.get(region);
+            return result;
+        }
+
+        @Override
+        public void setConf(Configuration conf) {
+            this.conf = conf;
+            //获取conf中hTable的region分布信息
+            String regionPartString = this.conf.get(UserSoftDayMapred.TABLE_REGION_PART);
+            String[] regionParts = regionPartString.split("\t");
+            String[] region;
+            String startKey;
+            int part;
+            for (String regionPart : regionParts) {
+                region = regionPart.split("_");
+                startKey = region[0];
+                part = Integer.parseInt(region[1]);
+                this.regionList.add(startKey);
+                this.regionPartMap.put(startKey, part);
+                System.out.println("------------startKey:" + startKey + " part:" + part);
+            }
+        }
+
+        @Override
+        public Configuration getConf() {
+            return this.conf;
         }
     }
 
@@ -198,7 +220,7 @@ public class UserSoftDayMapred {
         private final List<String> allValueList = new ArrayList<String>(50000);
         //hbase rowKey前缀
         private String rowKeyPrefix;
-        private String lastParHex = "";
+        private String lastPartHex = "";
         //part_imei去重后数据集合
         private final List<String> valueList = new ArrayList<String>(50000);
         //排序处理对象
@@ -227,9 +249,9 @@ public class UserSoftDayMapred {
         private long startTime = 0;
         private final StringBuilder mesBuilder = new StringBuilder(256);
         private double scanNum = 0;
+//        private final Text newKey = new Text();
+//        private final Text newValue = new Text();
         //
-        private final Text newKey = new Text();
-        private final Text newValue = new Text();
 
         /**
          * 获取前缀为rowKeyPrefix的数据，并将rowKey放入rowKeySet
@@ -278,7 +300,6 @@ public class UserSoftDayMapred {
 //            } catch (IOException ex) {
 //            }
 //        }
-
         private Put createInsertPut(String value) {
             //softId_gatherTime_platForm_softVersion_hashCode_p
             String[] record = value.split("_");
@@ -336,7 +357,7 @@ public class UserSoftDayMapred {
             //从hbase获取前缀为rowKeyPrefix的数据
             this.inquireRowKeyByPrefix();
             //比较输入数据和缓存数据
-            String softId = "";
+            String softId;
             Put put;
             for (String value : this.valueList) {
                 softId = value.substring(0, value.indexOf("_"));
@@ -351,7 +372,6 @@ public class UserSoftDayMapred {
                 }
                 this.putList.add(put);
             }
-//            this.getRowKey(softId);
             //如果softIdList集合size不为0,则剩下的softId则认为已经不用户删除
             for (String deleteSoftId : this.softIdList) {
                 //够造标记逻辑删除put
@@ -360,6 +380,12 @@ public class UserSoftDayMapred {
             }
         }
 
+        /**
+         * reducer 初始化
+         * @param context
+         * @throws IOException
+         * @throws InterruptedException 
+         */
         @Override
         protected void setup(Context context) throws IOException, InterruptedException {
             this.tableName = context.getConfiguration().get(UserSoftDayMapred.TABLE_NAME_PARA);
@@ -393,18 +419,18 @@ public class UserSoftDayMapred {
             this.allValueList.clear();
             //业务处理
             String[] keyRecord = key.toString().split("_");
-            int part = Integer.parseInt(keyRecord[0]);
             String imei = keyRecord[1];
-            String partHex = String.format("%04x", part);
-            if (partHex.equals(this.lastParHex) == false) {
+            String partHex = keyRecord[0];
+            if (partHex.equals(this.lastPartHex) == false) {
                 //part变化，保存已有数据
                 if (this.putList.isEmpty() == false) {
                     this.hTable.put(this.putList);
                     this.hTable.flushCommits();
                     long currentTime = System.currentTimeMillis();
-                    int scanSpeed = (int) (this.scanNum * 1000 / (currentTime - this.startTime));
-                    this.mesBuilder.append("part:").append(this.lastParHex).append(" size:").append(this.putList.size())
-                            .append(" scan speed:").append(scanSpeed).append("次/s scanNum:").append((int) this.scanNum);
+                    this.totalNum += this.putList.size();
+                    int speed = (int) (this.totalNum * 1000 / (currentTime - this.startTime));
+                    this.mesBuilder.append("part:").append(this.lastPartHex).append(" size:").append(this.putList.size())
+                            .append(" speed:").append(speed).append("row/s totalNum:").append((int) this.totalNum);
                     String msg = this.mesBuilder.toString();
                     this.mesBuilder.setLength(0);
                     System.out.println(msg);
@@ -414,9 +440,9 @@ public class UserSoftDayMapred {
                     //
                     this.putList.clear();
                 }
-                this.lastParHex = partHex;
+                this.lastPartHex = partHex;
             }
-            //
+            //生成当前数据的hTable的rowKey前缀
             this.keyPrefixBuilder.append(partHex).append('_').append(imei).append('_');
             this.rowKeyPrefix = keyPrefixBuilder.toString();
             this.keyPrefixBuilder.setLength(0);
@@ -428,9 +454,11 @@ public class UserSoftDayMapred {
 
         @Override
         protected void cleanup(Context context) throws IOException, InterruptedException {
+            //最后一个partHex的数据处理
             if (this.putList.isEmpty() == false) {
                 try {
                     this.hTable.put(this.putList);
+                    this.hTable.flushCommits();
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
