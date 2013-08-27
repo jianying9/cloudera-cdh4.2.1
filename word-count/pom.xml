@@ -46,4 +46,38 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <!--如果需要引入hadopp,hbase运行环境没有的第三方包，可以使用assembly打包插件打包-->
+            <!--1、注意assembly.xml路径的设置，默认和当前maven工程pom.xml同路径-->
+            <!--2、可以设置mainClass属性，这样在hadoop jar执行job时，可以免去制定mian函数的步骤，建议统一main函数命名，方便管理-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>assembly.xml</descriptor>
+                    </descriptors>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.cloudera.mapred.JobStart</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <reporting>
+        <outputDirectory>../target/site/word-count</outputDirectory>
+    </reporting>
 </project>

@@ -3,6 +3,7 @@ package com.cloudera.mapred;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.hadoop.examples.WordCount;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -15,14 +16,15 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author aladdin
  */
-public class UserSoftAnalyzeMapredTest {
+public class WordCountJUnitTest {
 
-    public UserSoftAnalyzeMapredTest() {
+    public WordCountJUnitTest() {
     }
 
     @BeforeClass
@@ -40,31 +42,54 @@ public class UserSoftAnalyzeMapredTest {
     @After
     public void tearDown() {
     }
+    
     private String[] mapInputLineArr = {
-        "12374	012368002052600	1	12	3184	false	1207052155	2	1926265856	null	0",
-        "12375	012368002052600	1	368	4710	false	1207172114	2	1926265856	null	0",
-        "15989	012961000307800	1	11495	318	false	1207052209	2	107345920	null	0",
-        "15991	012961000307800	1	13776	4639	false	1207052209	2	107345920	null	0",
-        "16959	013024001131700	1	1729	3076	false	1207121238	2	801954304	null	0",
-        "16960	013024001131700	1	11950	3097	false	1207121238	2	801954304	null	0"
+        "one two three",
+        "one",
+        "two",
+        "i",
+        "come to",
+        "here"
     };
+    
     private String[] mapOutputLineArr = {
-        "e5000000	1",
-        "e5000000	1",
-        "b7800000	1",
-        "b7800000	1",
-        "bf000000	1",
-        "bf000000	1"
+        "one	1",
+        "two	1",
+        "three	1",
+        "one	1",
+        "two	1",
+        "i	1",
+        "come	1",
+        "to	1",
+        "here	1"
     };
+    
+    private String[] redInputLineArr = {
+        "one	1",
+        "one	1",
+        "two	1",
+        "two	1",
+        "three	1",
+        "i	1",
+        "come	1",
+        "to	1",
+        "here	1"
+    };
+    
     private String[] redOutputLineArr = {
-        "e5000000	2",
-        "b7800000	2",
-        "bf000000	2"
+        "one	2",
+        "two	2",
+        "three	1",
+        "i	1",
+        "come	1",
+        "to	1",
+        "here	1"
     };
-    private Mapper mapper = new UserSoftAnalyzeMapred.MyMapper();
-    private Reducer reducer = new UserSoftAnalyzeMapred.MyReducer();
+    
+    private Mapper mapper = new WordCount.TokenizerMapper();
+    private Reducer reducer = new WordCount.IntSumReducer();
 
-//    @Test
+    @Test
     public void mapperTest() throws IOException {
         MapDriver mapDriver = new MapDriver(this.mapper);
         for (String line : this.mapInputLineArr) {
@@ -87,13 +112,14 @@ public class UserSoftAnalyzeMapredTest {
         String value;
         String[] record;
         List<IntWritable> valueList = new ArrayList<IntWritable>(4);
-        for (String line : this.mapOutputLineArr) {
+        for (String line : this.redInputLineArr) {
             record = line.split("\t");
             key = record[0];
             value = record[1];
             if (key.equals(lastKey) == false) {
                 if (lastKey.isEmpty() == false) {
                     reduceDriver.withInput(new Text(lastKey), valueList);
+                    System.out.println(lastKey);
                 }
                 lastKey = key;
                 valueList = new ArrayList<IntWritable>(4);
@@ -102,6 +128,7 @@ public class UserSoftAnalyzeMapredTest {
         }
         if (lastKey.isEmpty() == false) {
             reduceDriver.withInput(new Text(lastKey), valueList);
+            System.out.println(lastKey);
         }
         //
         for (String line : this.redOutputLineArr) {

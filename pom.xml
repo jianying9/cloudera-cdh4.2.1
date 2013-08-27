@@ -10,11 +10,17 @@
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+    <!--远程资源库地址-->
     <repositories>
         <repository>
-            <id>192.168.15.73</id>
-            <name>local maven repository</name>
+            <id>192.168.15.73-internal</id>
+            <name>local internal maven repository</name>
             <url>http://192.168.15.73:8080/archiva/repository/internal</url>
+        </repository>
+        <repository>
+            <id>192.168.15.73-snapshots</id>
+            <name>local snapshots maven repository</name>
+            <url>http://192.168.15.73:8080/archiva/repository/snapshots</url>
         </repository>
         <repository>
             <id>cloudera</id>
@@ -22,6 +28,23 @@
             <url>https://repository.cloudera.com/content/repositories/releases</url>
         </repository>
     </repositories>
+    <!--远程插件资源库地址-->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>192.168.15.73-internal</id>
+            <name>local internal maven repository</name>
+            <url>http://192.168.15.73:8080/archiva/repository/internal</url>
+        </pluginRepository>
+    </pluginRepositories>
+    <!--发布资源库地址-->
+    <distributionManagement>
+        <repository>
+            <id>192.168.15.73-snapshots</id>
+            <name>local snapshots maven repository</name>
+            <url>http://192.168.15.73:8080/archiva/repository/snapshots</url>
+        </repository>
+    </distributionManagement>
+    <!--包版本管理配置-->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -369,11 +392,23 @@
         </dependencies>
     </dependencyManagement>
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.1</version>
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
@@ -384,11 +419,93 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.3</version>
+                <configuration>
+                    <reportPlugins>
+                        <!--                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-javadoc-plugin</artifactId>
+                            <version>2.8</version>
+                        </plugin>-->
+                        <!--                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-jxr-plugin</artifactId>
+                            <version>2.3</version>
+                            <configuration>  
+                                <aggregate>true</aggregate>  
+                            </configuration> 
+                        </plugin>-->
+                        <plugin>  
+                            <groupId>org.apache.maven.plugins</groupId>  
+                            <artifactId>maven-surefire-report-plugin</artifactId>  
+                            <version>2.15</version>  
+                        </plugin>
+                        <!--                        <plugin>  
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-checkstyle-plugin</artifactId>
+                            <version>2.10</version>
+                        </plugin>-->
+                        <plugin>  
+                            <groupId>org.apache.maven.plugins</groupId>  
+                            <artifactId>maven-project-info-reports-plugin</artifactId>  
+                            <version>2.7</version>
+                            <reportSets>
+                                <reportSet>
+                                    <reports>
+                                        <report>index</report>
+                                        <report>summary</report>
+                                    </reports>
+                                </reportSet>
+                            </reportSets>  
+                        </plugin>
+                        <plugin>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>cobertura-maven-plugin</artifactId>
+                            <version>2.5.2</version>
+                        </plugin>
+                        <!--                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-pmd-plugin</artifactId>
+                            <version>3.0.1</version>
+                        </plugin>-->
+                        <!--                        <plugin>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>findbugs-maven-plugin</artifactId>
+                            <version>2.5.2</version>
+                        </plugin>-->
+                        <!--                        <plugin>  
+                            <groupId>org.codehaus.mojo</groupId>  
+                            <artifactId>dashboard-maven-plugin</artifactId>  
+                            <version>1.0.0-beta-1</version>
+                        </plugin>-->
+                    </reportPlugins>
+                </configuration>
+            </plugin>
+            <!--如果需要引入hadopp,hbase运行环境没有的第三方包，可以使用assembly打包插件打包-->
+            <!--1、注意assembly.xml路径的设置，默认和当前maven工程pom.xml同路径-->
+            <!--2、可以设置mainClass属性，这样在hadoop jar执行job时，可以免去制定mian函数的步骤，建议统一main函数命名，方便管理-->
+            <!--            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.4</version>
                 <configuration>
                     <descriptors>
-                        <descriptor>src/main/assembly.xml</descriptor>
+                        <descriptor>assembly.xml</descriptor>
                     </descriptors>
                     <archive>
                         <manifest>
@@ -405,13 +522,23 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
         </plugins>
     </build>
+    <!-- 环境编译 -->
+    <!--    <profiles>
+        <profile>
+            <id>development</id>
+        </profile>
+        <profile>
+            <id>test</id>
+        </profile>
+        <profile>
+            <id>server</id>
+        </profile>
+    </profiles>-->
     <modules>
         <module>word-count</module>
         <module>hbase-mapred-example</module>
-        <module>91-user-soft</module>
-    <module>91-user-soft-day</module>
-  </modules>
+    </modules>
 </project>
