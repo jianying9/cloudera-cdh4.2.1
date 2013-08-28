@@ -1,9 +1,8 @@
-package com.cloudera.mapred;
+package com.wolf.mapred;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.hadoop.examples.WordCount;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -16,15 +15,14 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
  * @author aladdin
  */
-public class WordCountJUnitTest {
+public class UserSoftAnalyzeMapredTest {
 
-    public WordCountJUnitTest() {
+    public UserSoftAnalyzeMapredTest() {
     }
 
     @BeforeClass
@@ -42,52 +40,42 @@ public class WordCountJUnitTest {
     @After
     public void tearDown() {
     }
-    
     private String[] mapInputLineArr = {
-        "one two three",
-        "one",
-        "two",
-        "i",
-        "come to",
-        "here"
+        "12374	012368002052600	1	12	3184	false	1207052155	2	1926265856	null	0",
+        "12375	012368002052600	1	368	4710	false	1207172114	2	1926265856	null	0",
+        "15989	012961000307800	1	11495	318	false	1207052209	2	107345920	null	0",
+        "15991	012961000307800	1	13776	4639	false	1207052209	2	107345920	null	0",
+        "16959	013024001131700	1	1729	3076	false	1207121238	2	801954304	null	0",
+        "16960	013024001131700	1	11950	3097	false	1207121238	2	801954304	null	0"
     };
-    
     private String[] mapOutputLineArr = {
-        "one	1",
-        "two	1",
-        "three	1",
-        "one	1",
-        "two	1",
-        "i	1",
-        "come	1",
-        "to	1",
-        "here	1"
+        "ea800000	1",
+        "ea800000	1",
+        "a8000000	1",
+        "a8000000	1",
+        "a4000000	1",
+        "a4000000	1"
     };
-    
-    private String[] redInputLineArr = {
-        "one	1",
-        "one	1",
-        "two	1",
-        "two	1",
-        "three	1",
-        "i	1",
-        "come	1",
-        "to	1",
-        "here	1"
-    };
-    
     private String[] redOutputLineArr = {
-        "one	2",
-        "two	2",
-        "three	1",
-        "i	1",
-        "come	1",
-        "to	1",
-        "here	1"
+        "ea800000	2",
+        "a8000000	2",
+        "a4000000	2"
     };
+    private Mapper mapper = new UserSoftAnalyzeMapred.MyMapper();
+    private Reducer reducer = new UserSoftAnalyzeMapred.MyReducer();
     
-    private Mapper mapper = new WordCount.TokenizerMapper();
-    private Reducer reducer = new WordCount.IntSumReducer();
+//    @Test
+    public void parsePart() {
+        String part;
+        String[] record;
+        String imei;
+        for (String line : mapInputLineArr) {
+            record = line.split("\t");
+            imei = record[1];
+            part = PartitionUtils.getPartition(imei);
+            System.out.println("imei to md5:" + part);
+        }
+    }
 
     @Test
     public void mapperTest() throws IOException {
@@ -112,14 +100,13 @@ public class WordCountJUnitTest {
         String value;
         String[] record;
         List<IntWritable> valueList = new ArrayList<IntWritable>(4);
-        for (String line : this.redInputLineArr) {
+        for (String line : this.mapOutputLineArr) {
             record = line.split("\t");
             key = record[0];
             value = record[1];
             if (key.equals(lastKey) == false) {
                 if (lastKey.isEmpty() == false) {
                     reduceDriver.withInput(new Text(lastKey), valueList);
-                    System.out.println(lastKey);
                 }
                 lastKey = key;
                 valueList = new ArrayList<IntWritable>(4);
@@ -128,7 +115,6 @@ public class WordCountJUnitTest {
         }
         if (lastKey.isEmpty() == false) {
             reduceDriver.withInput(new Text(lastKey), valueList);
-            System.out.println(lastKey);
         }
         //
         for (String line : this.redOutputLineArr) {

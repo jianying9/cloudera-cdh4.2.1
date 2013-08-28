@@ -47,6 +47,13 @@
     <!--包版本管理配置-->
     <dependencyManagement>
         <dependencies>
+            <!--内部包-->
+            <dependency>
+                <groupId>com.wolf</groupId>
+                <artifactId>91-user-soft-utils</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+            <!--第三方包-->
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-examples</artifactId>
@@ -540,5 +547,10 @@
     <modules>
         <module>word-count</module>
         <module>hbase-mapred-example</module>
-    </modules>
+        <module>91-user-soft-utils</module>
+        <module>91-user-soft-storefile</module>
+    <module>91-user-soft-load</module>
+    <module>91-user-soft-analyze</module>
+    <module>91-user-soft-day</module>
+  </modules>
 </project>

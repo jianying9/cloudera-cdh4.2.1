@@ -1,0 +1,18 @@
+{
+    "inputPath": {
+        "value": "${inputPath}",
+        "describe": "hdfs文件输入路径"
+    },
+    "tableName": {
+        "value": "${tableName}",
+        "describe": "写入hbase表名"
+    },
+    "loadFactor": {
+        "value": "${loadFactor}",
+        "describe": "负载系数，根据目标Hbase的region数量除以该系数得到reducer的数量"
+    },
+    "distance": {
+        "value": "${distance}",
+        "describe": "相同region server下，读取region的距离"
+    }         
+}

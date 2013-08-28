@@ -1,4 +1,4 @@
-package com.cloudera.mapred;
+package com.wolf.mapred;
 
 import java.io.IOException;
 import java.util.Iterator;

@@ -1,4 +1,4 @@
-package com.cloudera.mapred;
+package com.wolf.mapred;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
